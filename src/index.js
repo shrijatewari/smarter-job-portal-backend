@@ -19,6 +19,7 @@ import recommendRoutes from "./routes/recommendRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import skillsRoutes from "./routes/skillsRoutes.js";
 import rouletteRoutes from "./routes/rouletteRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
 
 const app = express();
 
@@ -56,10 +57,11 @@ app.use("/api/user", userRoutes); // User profile endpoints
 app.use("/api/internships", internshipRoutes);
 app.use("/api/jsearch", jsearchRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/recommendations", recommendRoutes); // Fixed: separate path
+app.use("/api/internships", recommendRoutes); // Recommendations under internships
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/skills", skillsRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/tests", testRoutes);
 // Roulette routes - register with specific paths to avoid conflicts
 app.use("/api/internships", rouletteRoutes); // For /api/internships/random
 app.use("/api/preferences", rouletteRoutes); // For /api/preferences/save

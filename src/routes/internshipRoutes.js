@@ -1,6 +1,8 @@
+
 import express from "express";
 import Internship from "../models/Internship.js";
 import axios from "axios";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -249,6 +251,85 @@ router.get("/aggregate", async (req, res) => {
       { job_id: "error-fallback-1", title: "Software Development Intern", company: "TechStart", location: "Seattle, WA", description: "Join our development team and work on exciting projects.", apply_link: "https://example.com/apply", type: "Internship", is_remote: false, duration_months: 3, stipend: 20000, posted_at: new Date().toISOString(), source: "fallback" }
     ];
     res.json(errorFallback);
+  }
+});
+
+// Aggregate internships from JSearch and save to DB
+router.post('/aggregate', async (req, res) => {
+  const { keyword, pages = 1 } = req.body;
+  try {
+    const internships = await fetchFromJsearch({
+      query: keyword || 'Software Developer Intern',
+      num_pages: pages,
+    });
+
+    if (!internships || internships.length === 0) {
+      return res.status(200).json({ message: 'No new internships found from JSearch.' });
+    }
+
+    const formattedInternships = internships.map(job => ({
+      job_id: job.job_id,
+      title: job.job_title,
+      company: job.employer_name,
+      location: job.job_city || 'N/A',
+      description: job.job_description,
+      apply_link: job.job_apply_link,
+      posted_at: job.job_posted_at_datetime_utc,
+      job_source: 'JSearch API',
+    }));
+
+    for (const intern of formattedInternships) {
+      await Internship.updateOne({ job_id: intern.job_id }, { $set: intern }, { upsert: true });
+    }
+
+    res.status(200).json({ message: `Successfully aggregated and saved ${formattedInternships.length} internships.` });
+  } catch (error) {
+    console.error('Aggregation Error:', error.message);
+    res.status(500).json({ message: 'Failed to aggregate internships.' });
+  }
+});
+
+// Get internships for the roulette feature
+router.get('/roulette', auth, async (req, res) => {
+  try {
+    // First, try to fetch fresh data
+    const freshInternships = await fetchFromJsearch({
+      query: 'Software Engineer Intern',
+      num_pages: 1,
+    });
+
+    if (freshInternships && freshInternships.length > 0) {
+      return res.json(freshInternships.slice(0, 10)); // Return top 10 fresh results
+    }
+
+    // Fallback: If API fails or returns no results, return sample data
+    const fallbackInternships = [
+      {
+        _id: 'fallback-1',
+        title: 'Software Engineer Intern',
+        company: 'TechCorp',
+        location: 'San Francisco, CA',
+        description: 'Join our engineering team and work on cutting-edge software projects.',
+        url: 'https://techcorp.com/careers',
+        datePosted: new Date(),
+        score: 85
+      },
+      {
+        _id: 'fallback-2',
+        title: 'Frontend Developer Intern',
+        company: 'WebFlow',
+        location: 'Remote',
+        description: 'Build modern web applications using React and TypeScript.',
+        url: 'https://webflow.com/jobs',
+        datePosted: new Date(),
+        score: 82
+      }
+    ];
+    
+    res.json(fallbackInternships);
+  } catch (error) {
+    console.error('Roulette internships error:', error);
+    res.status(500).json({ error: 'Failed to fetch internships for roulette' });
   }
 });
 
