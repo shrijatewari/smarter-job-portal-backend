@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 // AI Service Configuration
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5000';
@@ -879,7 +879,7 @@ const analyzeApplicationPerformance = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getAIHealth,
   analyzeJobMatch,
   optimizeResume,

@@ -1,6 +1,5 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import {
   getAIHealth,
   analyzeJobMatch,
   optimizeResume,
@@ -12,8 +11,10 @@ const {
   createLearningPlan,
   getNetworkingInsights,
   analyzeApplicationPerformance
-} = require('../controllers/aiController');
-const auth = require('../middleware/auth');
+} from '../controllers/aiController.js';
+import auth from '../middleware/auth.js';
+
+const router = express.Router();
 
 // AI Health Check
 router.get('/health', getAIHealth);
@@ -48,4 +49,4 @@ router.post('/networking-insights', auth, getNetworkingInsights);
 // Application Analytics
 router.post('/analyze-application-performance', auth, analyzeApplicationPerformance);
 
-module.exports = router;
+export default router;
