@@ -30,6 +30,8 @@ app.use(express.json()); // parse JSON
 const corsOptions = {
   origin: [
     process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://smarter-job-portal-frontend.vercel.app",
+    "https://smarter-job-portal-frontend-r6emvvzrf.vercel.app",
     "https://accounts.google.com",
     "https://github.com"
   ],
